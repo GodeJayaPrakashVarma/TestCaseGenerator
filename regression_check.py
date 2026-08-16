@@ -1,5 +1,5 @@
-from graph import run_full_pipeline
-from utils import load_json_file
+from pipeline.graph import run_full_pipeline
+from pipeline.utils import load_json_file
 
 ISSUE_COUNT_TOLERANCE = 1
 

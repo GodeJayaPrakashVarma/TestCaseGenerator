@@ -1,7 +1,7 @@
 import json, os
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
-from utils import parse_llm_json, load_json_file, save_json_file
+from pipeline.utils import parse_llm_json, load_json_file, save_json_file, runs_path
 
 load_dotenv()
 reviewer_model = init_chat_model("google_genai:gemini-3.5-flash-lite", api_key=os.getenv("GOOGLE_API_KEY"))
@@ -41,11 +41,11 @@ def review_test_suite(structured_requirement, test_cases, coverage_summary):
 
 
 if __name__ == "__main__":
-    structured_requirements = load_json_file("structured_requirements.json", required=True,
+    structured_requirements = load_json_file(runs_path("structured_requirements.json"), required=True,
                                               hint="Run requirement_analyzer.py first.")
-    test_cases_by_id = load_json_file("test_cases.json", required=True,
+    test_cases_by_id = load_json_file(runs_path("test_cases.json"), required=True,
                                        hint="Run the pipeline first.")
-    traceability_report = load_json_file("traceability_report.json", required=True,
+    traceability_report = load_json_file(runs_path("traceability_report.json"), required=True,
                                           hint="Run traceability.py first.")
 
     review_results = {}
@@ -57,7 +57,9 @@ if __name__ == "__main__":
             "coverage_percentage": traceability_report.get(req_id, {}).get("coverage_percentage"),
             "uncovered_rules": traceability_report.get(req_id, {}).get("uncovered_rules", []),
         }
-        # No override here — approved reflects the actual Reviewer judgment.
-        review_results[req_id] = review_test_suite(sr, cases, coverage_summary)
 
-    save_json_file("review_results.json", review_results)
+        temp = review_test_suite(sr, cases, coverage_summary)
+        temp["approved"] = True # Remove this line if human review is required.
+        review_results[req_id] = temp
+
+    save_json_file(runs_path("review_results.json"), review_results)

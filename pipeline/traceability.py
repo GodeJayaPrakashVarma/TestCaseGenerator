@@ -1,4 +1,4 @@
-from utils import load_json_file, save_json_file
+from pipeline.utils import load_json_file, save_json_file, runs_path
 
 
 def build_traceability_matrix(structured_requirements, test_cases_by_id):
@@ -27,13 +27,13 @@ def build_traceability_matrix(structured_requirements, test_cases_by_id):
 
 if __name__ == "__main__":
     structured_requirements = load_json_file(
-        "structured_requirements.json", required=True,
+        runs_path("structured_requirements.json"), required=True,
         hint="Run requirement_analyzer.py first."
     )
     test_cases_by_id = load_json_file(
-        "test_cases.json", required=True,
+        runs_path("test_cases.json"), required=True,
         hint="Run the pipeline (run_pipeline.py or graph.py) first."
     )
 
     traceability_report = build_traceability_matrix(structured_requirements, test_cases_by_id)
-    save_json_file("traceability_report.json", traceability_report)
+    save_json_file(runs_path("traceability_report.json"), traceability_report)

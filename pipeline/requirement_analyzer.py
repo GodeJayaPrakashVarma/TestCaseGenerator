@@ -1,10 +1,10 @@
 import os, yaml
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
-from utils import parse_llm_json, save_json_file
+from pipeline.utils import parse_llm_json, save_json_file, runs_path
 
 load_dotenv()
-model = init_chat_model("groq:llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
+model = init_chat_model("google_genai:gemini-3.5-flash-lite", api_key=os.getenv("GOOGLE_API_KEY"))
 
 SYSTEM_PROMPT = """You are a requirement analyzer for a QA test-case generation pipeline. Given ONE raw software requirement, extract it into structured JSON. Do not invent details, constraints, or fields not stated or clearly implied by the text.
 
@@ -33,7 +33,7 @@ Rules:
 - ambiguities: only text explicitly marked as undecided (TBD, 'not finalized', 'not specified', etc.). A statement of what does NOT happen is a specification, not an ambiguity. Empty list if none."""
 
 
-def run_requirement_analyzer(yaml_path="requirements.yaml"):
+def run_requirement_analyzer(yaml_path="fixtures/requirements.yaml"):
     if not os.path.exists(yaml_path):
         raise FileNotFoundError(
             f"Required file not found: {yaml_path}\n"
@@ -55,4 +55,4 @@ def run_requirement_analyzer(yaml_path="requirements.yaml"):
 
 if __name__ == "__main__":
     results = run_requirement_analyzer()
-    save_json_file("structured_requirements.json", results)
+    save_json_file(runs_path("structured_requirements.json"), results)

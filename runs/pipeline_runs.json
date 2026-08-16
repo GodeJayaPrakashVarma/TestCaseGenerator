@@ -1,0 +1,70 @@
+[
+  {
+    "run_id": "2026-08-16T17:00:40+00:00",
+    "requirements": [
+      {
+        "id": "FIX-1",
+        "final_coverage": 1.0,
+        "retries_used": 2,
+        "test_case_count": 6,
+        "duplicates_removed_count": 1,
+        "review_approved": false,
+        "review_issue_count": 1
+      },
+      {
+        "id": "FIX-2",
+        "final_coverage": 1.0,
+        "retries_used": 2,
+        "test_case_count": 3,
+        "duplicates_removed_count": 1,
+        "review_approved": false,
+        "review_issue_count": 2
+      },
+      {
+        "id": "FIX-3",
+        "final_coverage": 1.0,
+        "retries_used": 3,
+        "test_case_count": 9,
+        "duplicates_removed_count": 1,
+        "review_approved": false,
+        "review_issue_count": 3
+      },
+      {
+        "id": "FIX-4",
+        "final_coverage": 1.0,
+        "retries_used": 2,
+        "test_case_count": 9,
+        "duplicates_removed_count": 0,
+        "review_approved": false,
+        "review_issue_count": 2
+      },
+      {
+        "id": "FIX-5",
+        "final_coverage": 1.0,
+        "retries_used": 1,
+        "test_case_count": 4,
+        "duplicates_removed_count": 0,
+        "review_approved": false,
+        "review_issue_count": 2
+      },
+      {
+        "id": "FIX-6",
+        "final_coverage": 1.0,
+        "retries_used": 1,
+        "test_case_count": 5,
+        "duplicates_removed_count": 0,
+        "review_approved": false,
+        "review_issue_count": 2
+      },
+      {
+        "id": "FIX-7",
+        "final_coverage": 1.0,
+        "retries_used": 2,
+        "test_case_count": 7,
+        "duplicates_removed_count": 1,
+        "review_approved": false,
+        "review_issue_count": 3
+      }
+    ]
+  }
+]

@@ -1,0 +1,407 @@
+[
+  {
+    "id": "FIX-1",
+    "structured_requirement": {
+      "feature_name": "New User Account Sign Up",
+      "actor": "new user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "Navigate to the sign-up page.",
+        "Provide email and password.",
+        "Submit the sign-up form."
+      ],
+      "inputs": [
+        {
+          "field": "email",
+          "type": "string",
+          "constraints": "must be a valid email"
+        },
+        {
+          "field": "password",
+          "type": "string",
+          "constraints": "at least 8 characters; must not be one of the 100 most commonly used passwords"
+        }
+      ],
+      "expected_outcomes": [
+        "Account is created.",
+        "A confirmation link is sent to the provided email.",
+        "Unverified accounts are granted read-only access for 7 days upon login."
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Email must be verified via a confirmation link before the account is fully activated",
+          "type": "state_transition",
+          "source_text": "Email must be verified via a confirmation link before the account is fully activated"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Unverified accounts can log in but are limited to read-only access for 7 days",
+          "type": "authorization",
+          "source_text": "unverified accounts can still log in but are limited to read-only access for 7 days"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Unverified accounts are automatically suspended after 7 days",
+          "type": "state_transition",
+          "source_text": "after which they're automatically suspended"
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "Password must be at least 8 characters",
+          "type": "validation",
+          "source_text": "Password must be at least 8 characters"
+        },
+        {
+          "rule_id": "BR-5",
+          "description": "System should reject the 100 most commonly used passwords",
+          "type": "validation",
+          "source_text": "the system should reject the 100 most commonly used passwords rather than just checking length"
+        }
+      ],
+      "acceptance_criteria": [
+        "User can successfully sign up with valid email and password meeting length and commonality criteria.",
+        "System sends an email verification confirmation link upon sign-up.",
+        "System rejects passwords under 8 characters.",
+        "System rejects passwords included in the 100 most commonly used passwords list.",
+        "Unverified accounts can log in and have read-only access.",
+        "Unverified accounts are automatically suspended after 7 days if email is not verified."
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-2",
+    "structured_requirement": {
+      "feature_name": "Subscription Plan Upgrade and Downgrade",
+      "actor": "Free-tier user",
+      "preconditions": [
+        "User has an active subscription plan"
+      ],
+      "main_flow_steps": [
+        "Initiate an upgrade to the Pro plan",
+        "Process payment with prorated charge based on days remaining in the current cycle",
+        "Grant access to advanced features immediately upon upgrading",
+        "Initiate a downgrade from Pro to Free or Team to Pro",
+        "Apply business rules regarding downgrade timing and member limits"
+      ],
+      "inputs": [
+        {
+          "field": "target_plan",
+          "type": "string",
+          "constraints": "Must be a valid plan type (Pro, Free, Team)"
+        }
+      ],
+      "expected_outcomes": [
+        "Upgrading mid-billing-cycle prorates the charge based on days remaining in the current cycle",
+        "Pro features are accessible immediately after upgrading",
+        "Downgrading from Pro to Free takes effect at the end of the current billing period",
+        "User retains Pro features until the end of the billing period when downgrading from Pro to Free",
+        "Downgrading from Team to Pro is blocked if team members exceed Pro allowances until members are removed"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Upgrading mid-billing-cycle must prorate the charge based on days remaining in the current cycle.",
+          "type": "calculation",
+          "source_text": "Upgrading mid-billing-cycle should prorate the charge based on days remaining in the current cycle."
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Downgrading from Pro to Free must not be immediate and must take effect at the end of the current billing period.",
+          "type": "state_transition",
+          "source_text": "Downgrading from Pro to Free should NOT be immediate \u2014 it should take effect at the end of the current billing period, and the user keeps Pro features until then."
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Team-plan user downgrading to Pro with more team members than Pro allows must be blocked until members are removed.",
+          "type": "validation",
+          "source_text": "If a Team-plan user downgrades to Pro and currently has more team members than Pro allows, the downgrade should be blocked until they remove members, not silently truncate the team."
+        }
+      ],
+      "acceptance_criteria": [
+        "An upgrade to the Pro plan grants immediate access to advanced features",
+        "An upgrade executed mid-billing-cycle calculates a prorated charge based on remaining days",
+        "A downgrade from Pro to Free does not apply immediately",
+        "A user downgrading from Pro to Free retains access to Pro features until the end of the current billing period",
+        "A downgrade from Team to Pro is blocked if the user exceeds the member limit of the Pro plan",
+        "A blocked downgrade prevents the plan change without silently truncating the team members"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-3",
+    "structured_requirement": {
+      "feature_name": "Task and Project Creation",
+      "actor": "Free-tier user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "Initiate creation of a project or task",
+        "Submit the project or task creation request"
+      ],
+      "inputs": [],
+      "expected_outcomes": [
+        "Project or task is created if limits are not exceeded",
+        "Upgrade prompt is shown when attempting to create a project beyond the 3 active projects cap",
+        "HTTP 429 response with a retry-after header is returned when the API rate limit is exceeded"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Free tier is capped at 3 active projects",
+          "type": "validation",
+          "source_text": "The Free tier is capped at 3 active projects and 50 tasks per project."
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Free tier is capped at 50 tasks per project",
+          "type": "validation",
+          "source_text": "The Free tier is capped at 3 active projects and 50 tasks per project."
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "API requests are rate-limited to 60 requests/minute for Free tier and 600/minute for Pro/Team",
+          "type": "validation",
+          "source_text": "API requests are rate-limited to 60 requests/minute for Free tier and 600/minute for Pro/Team"
+        }
+      ],
+      "acceptance_criteria": [
+        "Free-tier user can create up to 3 active projects successfully",
+        "Free-tier user can create up to 50 tasks per project successfully",
+        "Attempting to create a project beyond the 3 project cap displays an upgrade prompt instead of a generic error",
+        "API requests exceeding 60 requests/minute for Free tier return a 429 status code with a retry-after header"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-4",
+    "structured_requirement": {
+      "feature_name": "Team Member Invitation and Role Management",
+      "actor": "Team-plan account owner",
+      "preconditions": [
+        "The actor is logged in as a Team-plan account owner",
+        "The target user holds exactly one role per team"
+      ],
+      "main_flow_steps": [
+        "Invite a teammate to the team",
+        "Assign a role (Admin, Editor, Viewer) to the invited teammate"
+      ],
+      "inputs": [
+        {
+          "field": "teammate",
+          "type": "string",
+          "constraints": "none stated"
+        },
+        {
+          "field": "role",
+          "type": "string",
+          "constraints": "must be Admin, Editor, or Viewer"
+        }
+      ],
+      "expected_outcomes": [
+        "Teammate receives an invitation",
+        "Teammate is assigned the specified role upon joining"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "A user holds exactly one role per team.",
+          "type": "validation",
+          "source_text": "A user holds exactly one role per team."
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Only the account owner can transfer ownership to another Admin.",
+          "type": "authorization",
+          "source_text": "Only the account owner can transfer ownership to another Admin"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Admins cannot remove the owner.",
+          "type": "authorization",
+          "source_text": "Admins cannot remove the owner."
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "If the owner's account is deleted, ownership automatically transfers to the longest-tenured Admin.",
+          "type": "state_transition",
+          "source_text": "If the owner's account is deleted, ownership should automatically transfer to the longest-tenured Admin rather than leaving the team ownerless."
+        }
+      ],
+      "acceptance_criteria": [
+        "Account owner can successfully invite a teammate and assign an Admin, Editor, or Viewer role",
+        "A user is restricted to holding exactly one role per team",
+        "Only the account owner is able to transfer ownership to another Admin",
+        "Admins are prevented from removing the account owner",
+        "Deletion of the owner's account automatically transfers ownership to the longest-tenured Admin"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-5",
+    "structured_requirement": {
+      "feature_name": "Pro Trial Management",
+      "actor": "user starting a 14-day Pro trial",
+      "preconditions": [
+        "User is eligible for a trial (one-time per account based on verified email)"
+      ],
+      "main_flow_steps": [
+        "User starts the 14-day Pro trial",
+        "System grants full Pro features during the trial",
+        "User optionally adds a payment method during the trial",
+        "System checks for payment method addition and processes account status on day 14"
+      ],
+      "inputs": [
+        {
+          "field": "payment method",
+          "type": "string",
+          "constraints": "none specified"
+        }
+      ],
+      "expected_outcomes": [
+        "User receives full Pro features during the trial period",
+        "Account automatically downgrades to Free on day 14 if no payment method is added",
+        "First charge for an added payment method occurs on day 15 rather than immediately upon adding the card",
+        "Re-signing up with the same verified email does not grant a second trial"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "If no payment method is added by day 14, the account automatically downgrades to Free rather than continuing Pro access unpaid.",
+          "type": "state_transition",
+          "source_text": "If no payment method is added by day 14, the account should automatically downgrade to Free rather than continuing Pro access unpaid."
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "If a payment method is added during the trial, the first charge occurs on day 15, not immediately on adding the card.",
+          "type": "calculation",
+          "source_text": "If a payment method IS added during the trial, the first charge should not occur until day 15, not immediately on adding the card."
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Trial eligibility is one-time per account and re-signing up with the same verified email does not grant a second trial.",
+          "type": "validation",
+          "source_text": "Trial eligibility is one-time per account \u2014 re-signing up with the same verified email should not grant a second trial"
+        }
+      ],
+      "acceptance_criteria": [
+        "User gets full Pro features during the 14-day trial",
+        "Account downgrades to Free on day 14 if no payment method is provided",
+        "Adding a payment method during the trial does not result in an immediate charge",
+        "First charge for the added payment method occurs on day 15",
+        "Re-signing up with the same verified email does not grant a second trial"
+      ],
+      "ambiguities": [
+        "the exact detection method (email match only, or also payment fingerprint) isn't finalized"
+      ]
+    }
+  },
+  {
+    "id": "FIX-6",
+    "structured_requirement": {
+      "feature_name": "Account Data Export and Deletion",
+      "actor": "user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "Export all data before deleting the account",
+        "Request account deletion",
+        "Enter a 24-hour grace period",
+        "Permanently purge data after the 24-hour grace period if not canceled"
+      ],
+      "inputs": [],
+      "expected_outcomes": [
+        "Data is exported in a machine-readable format",
+        "Account deletion request initiates a 24-hour grace period",
+        "Account deletion can be canceled during the grace period",
+        "Data is permanently purged after the grace period expires"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Account deletion is a two-step process consisting of a request followed by a 24-hour grace period.",
+          "type": "state_transition",
+          "source_text": "Account deletion is a two-step process: request deletion, then a 24-hour grace period during which the user can cancel it, after which data is permanently purged."
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "A team-plan export triggered by a non-owner member must only include that member's own tasks and exclude the rest of the team's data.",
+          "type": "authorization",
+          "source_text": "a team-plan export triggered by a non-owner member should only include that member's own tasks, not the whole team's data."
+        }
+      ],
+      "acceptance_criteria": [
+        "User can export all data in a machine-readable format prior to account deletion.",
+        "User can request account deletion, initiating a 24-hour grace period.",
+        "User can cancel the account deletion during the 24-hour grace period.",
+        "Data is permanently purged automatically after the 24-hour grace period expires without cancellation.",
+        "A team-plan export triggered by a non-owner member includes only that specific member's tasks."
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-7",
+    "structured_requirement": {
+      "feature_name": "Email Notification Preference Control",
+      "actor": "user",
+      "preconditions": [
+        "User is authenticated and accessing notification settings"
+      ],
+      "main_flow_steps": [
+        "Navigate to email notification preferences",
+        "View list of available notification types and their current toggle states",
+        "Modify toggles to opt out of or opt in to individual notification types",
+        "Save changes"
+      ],
+      "inputs": [
+        {
+          "field": "Notification Type Preferences",
+          "type": "boolean",
+          "constraints": "Security-related notifications cannot be disabled"
+        }
+      ],
+      "expected_outcomes": [
+        "Preferences are updated successfully",
+        "Changes take effect for the next scheduled notification without retroactively affecting already queued ones",
+        "Digest emails are sent at 9am local time based on the user's timezone, or UTC if timezone is not set"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Security-related notifications (password changes, new device login) cannot be disabled",
+          "type": "validation",
+          "source_text": "security-related notifications (password changes, new device login) cannot be disabled"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Digest emails are sent at a time based on the user's timezone, defaulting to 9am local time",
+          "type": "calculation",
+          "source_text": "Digest emails are sent at a time based on the user's timezone, defaulting to 9am local time"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "If user timezone is not set, digest emails default to UTC",
+          "type": "calculation",
+          "source_text": "if timezone isn't set, default to UTC"
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "Changing notification preferences takes effect for the next scheduled notification and does not retroactively affect ones already queued",
+          "type": "state_transition",
+          "source_text": "Changing notification preferences should take effect for the next scheduled notification, not retroactively affect ones already queued"
+        }
+      ],
+      "acceptance_criteria": [
+        "User can opt out of individual non-security notification types",
+        "User cannot disable security-related notifications such as password changes and new device logins",
+        "Digest emails are scheduled at 9am in the user's local timezone",
+        "Digest emails default to UTC if the user's timezone is not set",
+        "Updated preferences apply only to upcoming scheduled notifications and do not affect already queued notifications"
+      ],
+      "ambiguities": []
+    }
+  }
+]

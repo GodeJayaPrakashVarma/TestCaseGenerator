@@ -1,16 +1,16 @@
-from utils import load_json_file, save_json_file
+from pipeline.utils import load_json_file, save_json_file, runs_path
 
 
 def create_baseline():
     structured_requirements = load_json_file("structured_requirements.json", required=True,
                                                hint="Run requirement_analyzer.py first.")
-    save_json_file("golden/structured_requirements.json", structured_requirements)
+    save_json_file(runs_path("golden/structured_requirements.json"), structured_requirements)
 
-    test_cases = load_json_file("test_cases.json", required=True,
+    test_cases = load_json_file(runs_path("test_cases.json"), required=True,
                                  hint="Run the pipeline first.")
-    save_json_file("golden/test_cases.json", test_cases)
+    save_json_file(runs_path("golden/test_cases.json"), test_cases)
 
-    all_runs = load_json_file("pipeline_runs.json", required=True,
+    all_runs = load_json_file(runs_path("pipeline_runs.json"), required=True,
                                hint="Run the pipeline first — pipeline_runs.json is written by graph.py.")
     latest_run = all_runs[-1]
 
@@ -21,7 +21,7 @@ def create_baseline():
         }
         for req in latest_run["requirements"]
     }
-    save_json_file("golden/golden_summary.json", summary)
+    save_json_file(runs_path("golden/golden_summary.json"), summary)
 
     print("Golden baseline saved from run:", latest_run["run_id"])
 

@@ -2,12 +2,12 @@ import os
 from datetime import datetime, timezone
 from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
-from testgenerator import generate_test_cases
-from dedup import duplicate_detector
-from traceability import build_traceability_matrix
-from coverage_verifier import coverage_verifier
-from reviewer import review_test_suite
-from utils import load_json_file, save_json_file
+from pipeline.testgenerator import generate_test_cases
+from pipeline.dedup import duplicate_detector
+from pipeline.traceability import build_traceability_matrix
+from pipeline.coverage_verifier import coverage_verifier
+from pipeline.reviewer import review_test_suite
+from pipeline.utils import load_json_file, save_json_file, runs_path
 
 
 class RequirementState(TypedDict):
@@ -100,8 +100,8 @@ def run_full_pipeline(structured_requirements):
 
 
 def write_pipeline_outputs(all_results):
-    save_json_file("test_cases.json", [{"id": r["id"], "test_cases": r["test_cases"]} for r in all_results])
-    save_json_file("review_results.json", {r["id"]: r["review_result"] for r in all_results})
+    save_json_file(runs_path("test_cases.json"), [{"id": r["id"], "test_cases": r["test_cases"]} for r in all_results])
+    save_json_file(runs_path("review_results.json"), {r["id"]: r["review_result"] for r in all_results})
 
     run_id = datetime.now(timezone.utc).isoformat(timespec="seconds")
     record = {
@@ -119,21 +119,21 @@ def write_pipeline_outputs(all_results):
             for r in all_results
         ],
     }
-    runs = load_json_file("pipeline_runs.json", required=False, default=[])
+    runs = load_json_file(runs_path("pipeline_runs.json"), required=False, default=[])
     runs.append(record)
-    save_json_file("pipeline_runs.json", runs)
+    save_json_file(runs_path("pipeline_runs.json"), runs)
 
     new_dupes = [{**entry, "run_id": run_id} for r in all_results for entry in r["dupes_log"]]
-    existing_dupes = load_json_file("duplicates_removed.json", required=False, default=[])
+    existing_dupes = load_json_file(runs_path("duplicates_removed.json"), required=False, default=[])
     existing_dupes.extend(new_dupes)
-    save_json_file("duplicates_removed.json", existing_dupes)
+    save_json_file(runs_path("duplicates_removed.json"), existing_dupes)
 
     return run_id
 
 
 if __name__ == "__main__":
     structured_requirements = load_json_file(
-        "structured_requirements.json", required=True,
+        runs_path("structured_requirements.json"), required=True,
         hint="Run requirement_analyzer.py first."
     )
 

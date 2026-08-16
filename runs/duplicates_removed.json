@@ -1,0 +1,30 @@
+[
+  {
+    "fixture_id": "FIX-1",
+    "kept": "FIX-1-TC-3",
+    "removed": "FIX-1-TC-5",
+    "similarity": 0.926,
+    "run_id": "2026-08-16T17:00:40+00:00"
+  },
+  {
+    "fixture_id": "FIX-2",
+    "kept": "FIX-2-TC-3",
+    "removed": "FIX-2-TC-4",
+    "similarity": 0.963,
+    "run_id": "2026-08-16T17:00:40+00:00"
+  },
+  {
+    "fixture_id": "FIX-3",
+    "kept": "FIX-3-TC-2",
+    "removed": "FIX-3-TC-5",
+    "similarity": 0.949,
+    "run_id": "2026-08-16T17:00:40+00:00"
+  },
+  {
+    "fixture_id": "FIX-7",
+    "kept": "FIX-7-TC-3",
+    "removed": "FIX-7-TC-4",
+    "similarity": 0.915,
+    "run_id": "2026-08-16T17:00:40+00:00"
+  }
+]

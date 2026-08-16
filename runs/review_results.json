@@ -1,0 +1,154 @@
+{
+  "FIX-1": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-1-TC-6",
+        "issue": "Duplicate test_id used for two different test cases (one for 7-day suspension and one for unactivated status prior to clicking link).",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Test scenario verifying that clicking the email confirmation link successfully transitions the account to a fully activated status with write permissions."
+    ],
+    "overall_feedback": "The test suite covers all stated business rules well, but contains a duplicate test ID collision ('FIX-1-TC-6') that must be fixed. Additionally, it misses a positive test scenario covering the successful verification step via the confirmation link.",
+    "coverage_summary": {
+      "coverage_percentage": 1.0,
+      "uncovered_rules": []
+    }
+  },
+  "FIX-2": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-2-TC-1",
+        "issue": "Expected result combines two distinct verifications (prorated charge calculation and immediate feature access) into a single non-atomic check.",
+        "severity": "minor"
+      },
+      {
+        "test_id": "FIX-2-TC-3",
+        "issue": "Steps do not verify that team members remain intact (untruncated) after the downgrade is blocked, leaving part of the acceptance criteria unasserted.",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Verify that a Team-plan user who successfully removes members down to the Pro allowance limit can then successfully complete the downgrade to Pro.",
+      "Verify that a downgrade from Team to Pro succeeds immediately when the active member count is already at or below the Pro plan limit."
+    ],
+    "overall_feedback": "The test suite covers the core stated rules well, but lacks boundary test cases for the Team-to-Pro downgrade recovery flow and fails to assert member preservation during a blocked downgrade. Splitting compound expected results and adding member-count validation steps will make the suite robust."
+  },
+  "FIX-3": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-3-TC-1",
+        "issue": "Test case describes creating projects up to the cap (BR-1), but the steps and precondition only create a single project (count 0 to 1). It does not test creating all 3 sequentially to reach the limit.",
+        "severity": "major"
+      },
+      {
+        "test_id": "FIX-3-TC-2",
+        "issue": "Test case title and linked rule (BR-2) state creating tasks up to the per-project limit of 50, but the test data and steps only create a single task ('Task 1').",
+        "severity": "major"
+      },
+      {
+        "test_id": "FIX-3-TC-6",
+        "issue": "Duplicate test ID 'FIX-3-TC-6' used for both the API rate limit edge case and the task cap negative test case.",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Test creating exactly 50 tasks in a project to verify the upper boundary of the task cap (BR-2)."
+    ],
+    "overall_feedback": "The test suite suffers from duplicate test IDs and test cases whose titles and stated coverage do not match their actual implementation steps (e.g., claiming to test limits like 3 projects or 50 tasks while only executing a single creation step). These issues must be corrected to ensure accurate test execution and reporting.",
+    "uncovered_rules": []
+  },
+  "FIX-4": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-4-TC-1",
+        "issue": "Expected result combines two separate events (receiving invitation and joining) which cannot be verified in a single step without logging in as the teammate.",
+        "severity": "minor"
+      },
+      {
+        "test_id": "FIX-4-TC-7",
+        "issue": "Expected result is ambiguous, stating the system either prevents assigning a second role OR replaces the existing one. A test case expected result must be deterministic.",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Non-Admin user (Editor or Viewer) attempts to transfer account ownership",
+      "Account owner attempts to transfer ownership to a non-Admin user (Editor or Viewer)"
+    ],
+    "overall_feedback": "The test suite covers all stated business rules, but includes a non-deterministic expected result in TC-7 and misses negative scenarios around unauthorized ownership transfer attempts by non-Admins and to non-Admins."
+  },
+  "FIX-5": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-5-TC-1",
+        "issue": "Linked rule IDs is empty despite covering the general trial feature flow.",
+        "severity": "minor"
+      },
+      {
+        "test_id": "FIX-5-TC-4",
+        "issue": "Step relies on a passive system check without instructing the tester how to trigger or simulate reaching day 14.",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Verify what happens when an expired or invalid payment method is added during the trial before day 15.",
+      "Verify immediate behavior or error message when a user tries to start a second trial with the same verified email."
+    ],
+    "overall_feedback": "The test suite covers the primary acceptance criteria and rules well, but lacks specific actionable steps for time-based test execution (like day 14/15 simulations) and misses edge cases regarding invalid payment methods and specific rejection messaging for duplicate trials."
+  },
+  "FIX-6": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-6-TC-1",
+        "issue": "Expected result 'Data is exported in a machine-readable format' is vague and does not specify which format (e.g., JSON, CSV) or how it's verified.",
+        "severity": "minor"
+      },
+      {
+        "test_id": "FIX-6-TC-4",
+        "issue": "Step 'Wait for the grace period to expire' is non-actionable in an automated test environment without a time-mocking or accelerated clock mechanism.",
+        "severity": "major"
+      }
+    ],
+    "missing_scenarios": [
+      "Verify that a team-plan export triggered by an account owner includes all team members' data.",
+      "Verify that attempting to cancel account deletion *after* the 24-hour grace period has expired is prevented or fails gracefully.",
+      "Verify that login is blocked or restricted once the account deletion grace period has expired and data is purged."
+    ],
+    "overall_feedback": "The test suite covers the primary functional paths well, but relies on non-actionable steps like waiting for a 24-hour grace period to naturally expire. Additionally, it misses essential negative and boundary scenarios such as owner export permissions and post-expiration cancellation attempts."
+  },
+  "FIX-7": {
+    "approved": false,
+    "issues_found": [
+      {
+        "test_id": "FIX-7-TC-1",
+        "issue": "Linked rule IDs array is empty despite testing standard preference opt-out functionality.",
+        "severity": "minor"
+      },
+      {
+        "test_id": "FIX-7-TC-5",
+        "issue": "Duplicate test_id 'FIX-7-TC-5' is used for two completely different test cases (one for BR-4 and one for BR-3).",
+        "severity": "major"
+      },
+      {
+        "test_id": "FIX-7-TC-5",
+        "issue": "Expected result 'Changes take effect for the next scheduled notification without retroactively affecting already queued ones' is largely repeated by the much more rigorous FIX-7-TC-7.",
+        "severity": "minor"
+      }
+    ],
+    "missing_scenarios": [
+      "Test opting back in to a notification type after previously opting out to ensure the toggle state correctly restores upcoming notifications."
+    ],
+    "overall_feedback": "The test suite covers the business rules well, but contains a duplicate test ID collision that must be resolved. Additionally, a missing scenario regarding opting back in should be addressed to ensure complete feature coverage.",
+    "coverage_summary": {
+      "coverage_percentage": 1.0,
+      "uncovered_rules": []
+    }
+  }
+}

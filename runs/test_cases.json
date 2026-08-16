@@ -1,0 +1,891 @@
+[
+  {
+    "id": "FIX-1",
+    "test_cases": [
+      {
+        "test_id": "FIX-1-TC-1",
+        "title": "Successful User Sign Up with Valid Credentials",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User is on the sign-up page"
+        ],
+        "steps": [
+          "Navigate to the sign-up page",
+          "Enter a valid email",
+          "Enter a valid password meeting length and commonality criteria",
+          "Submit the sign-up form"
+        ],
+        "test_data": {
+          "email": "testuser@example.com",
+          "password": "ValidPassword123"
+        },
+        "expected_result": "Account is created and a confirmation link is sent to the provided email."
+      },
+      {
+        "test_id": "FIX-1-TC-2",
+        "title": "Unverified Account Login and Read-Only Access",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has signed up but not clicked the confirmation link"
+        ],
+        "steps": [
+          "Navigate to the login page",
+          "Enter unverified account credentials",
+          "Submit the login form",
+          "Attempt to perform a write action"
+        ],
+        "test_data": {
+          "email": "testuser@example.com",
+          "password": "ValidPassword123"
+        },
+        "expected_result": "Unverified account successfully logs in and is granted read-only access."
+      },
+      {
+        "test_id": "FIX-1-TC-3",
+        "title": "Sign Up Rejected for Password Under 8 Characters",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User is on the sign-up page"
+        ],
+        "steps": [
+          "Navigate to the sign-up page",
+          "Enter a valid email",
+          "Enter a password with fewer than 8 characters",
+          "Submit the sign-up form"
+        ],
+        "test_data": {
+          "email": "testuser@example.com",
+          "password": "short"
+        },
+        "expected_result": "System rejects the password and prevents account creation."
+      },
+      {
+        "test_id": "FIX-1-TC-4",
+        "title": "Sign Up Rejected for Commonly Used Password",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-5"
+        ],
+        "preconditions": [
+          "User is on the sign-up page"
+        ],
+        "steps": [
+          "Navigate to the sign-up page",
+          "Enter a valid email",
+          "Enter a password from the 100 most commonly used passwords list",
+          "Submit the sign-up form"
+        ],
+        "test_data": {
+          "email": "testuser@example.com",
+          "password": "password123"
+        },
+        "expected_result": "System rejects the password because it is commonly used and prevents account creation."
+      },
+      {
+        "test_id": "FIX-1-TC-6",
+        "title": "Unverified Account Automatic Suspension After 7 Days",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "User signed up 7 days ago and has not verified their email"
+        ],
+        "steps": [
+          "Simulate the passage of 7 days without email verification",
+          "Attempt to log in with the unverified account credentials"
+        ],
+        "test_data": {
+          "email": "testuser@example.com",
+          "password": "ValidPassword123"
+        },
+        "expected_result": "Account is automatically suspended and login is denied."
+      },
+      {
+        "test_id": "FIX-1-TC-6",
+        "title": "Unverified Account Remains Unactivated Prior to Clicking Confirmation Link",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User has completed sign-up with a valid email and password.",
+          "User has received the confirmation link email.",
+          "User has NOT clicked the confirmation link."
+        ],
+        "steps": [
+          "Navigate to the login page.",
+          "Log in using the newly registered email and password.",
+          "Attempt to perform a write or restricted action that requires a fully activated account."
+        ],
+        "test_data": {
+          "email": "user@example.com",
+          "password": "ValidPassword123"
+        },
+        "expected_result": "User is logged in with read-only access and restricted from performing write actions because the account is not yet fully activated."
+      }
+    ]
+  },
+  {
+    "id": "FIX-2",
+    "test_cases": [
+      {
+        "test_id": "FIX-2-TC-1",
+        "title": "Upgrade to Pro plan grants immediate feature access and proration",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User has an active subscription plan",
+          "User is currently on Free tier in the middle of a billing cycle"
+        ],
+        "steps": [
+          "Initiate an upgrade to the Pro plan",
+          "Complete the payment process"
+        ],
+        "test_data": {
+          "target_plan": "Pro"
+        },
+        "expected_result": "The charge is prorated based on days remaining in the current cycle and advanced Pro features are accessible immediately."
+      },
+      {
+        "test_id": "FIX-2-TC-2",
+        "title": "Downgrade from Pro to Free takes effect at end of billing period",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has an active Pro subscription plan"
+        ],
+        "steps": [
+          "Initiate a downgrade from Pro to Free"
+        ],
+        "test_data": {
+          "target_plan": "Free"
+        },
+        "expected_result": "The downgrade takes effect at the end of the current billing period, and the user retains Pro features until that time."
+      },
+      {
+        "test_id": "FIX-2-TC-3",
+        "title": "Downgrade from Team to Pro blocked when member limit is exceeded",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "User has an active Team subscription plan with more team members than the Pro plan allows"
+        ],
+        "steps": [
+          "Initiate a downgrade from Team to Pro"
+        ],
+        "test_data": {
+          "target_plan": "Pro"
+        },
+        "expected_result": "The downgrade is blocked, preventing the plan change without silently truncating the team members."
+      }
+    ]
+  },
+  {
+    "id": "FIX-3",
+    "test_cases": [
+      {
+        "test_id": "FIX-3-TC-1",
+        "title": "Free-tier user creates projects up to the cap",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "Logged in as a Free-tier user",
+          "Current active projects count is 0"
+        ],
+        "steps": [
+          "Initiate creation of a project",
+          "Submit the project creation request"
+        ],
+        "test_data": {
+          "project_name": "Project Alpha"
+        },
+        "expected_result": "Project is created successfully."
+      },
+      {
+        "test_id": "FIX-3-TC-2",
+        "title": "Free-tier user creates tasks up to the per-project limit",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "Logged in as a Free-tier user",
+          "An active project exists with 0 tasks"
+        ],
+        "steps": [
+          "Initiate creation of a task within the project",
+          "Submit the task creation request"
+        ],
+        "test_data": {
+          "task_name": "Task 1"
+        },
+        "expected_result": "Task is created successfully."
+      },
+      {
+        "test_id": "FIX-3-TC-3",
+        "title": "Free-tier user attempts to exceed the active projects cap",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "Logged in as a Free-tier user",
+          "Current active projects count is 3"
+        ],
+        "steps": [
+          "Initiate creation of a new project",
+          "Submit the project creation request"
+        ],
+        "test_data": {
+          "project_name": "Project Delta"
+        },
+        "expected_result": "Upgrade prompt is shown."
+      },
+      {
+        "test_id": "FIX-3-TC-4",
+        "title": "Free-tier user creates exactly the maximum allowed active projects",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "Logged in as a Free-tier user",
+          "Current active projects count is 2"
+        ],
+        "steps": [
+          "Initiate creation of a project",
+          "Submit the project creation request"
+        ],
+        "test_data": {
+          "project_name": "Project Gamma"
+        },
+        "expected_result": "Project is created successfully, reaching the limit of 3 active projects."
+      },
+      {
+        "test_id": "FIX-3-TC-6",
+        "title": "Free-tier API rate limit exceeded",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Logged in as a Free-tier user",
+          "60 API requests have been executed within the current minute"
+        ],
+        "steps": [
+          "Send an additional API request to create a project or task"
+        ],
+        "test_data": {
+          "request_count": "61"
+        },
+        "expected_result": "HTTP 429 response with a retry-after header is returned."
+      },
+      {
+        "test_id": "FIX-3-TC-6",
+        "title": "Free-tier user attempts to exceed the 50 tasks per project cap",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "Free-tier user is logged in",
+          "Project already contains 50 active tasks"
+        ],
+        "steps": [
+          "Initiate creation of a new task in the project",
+          "Submit the task creation request"
+        ],
+        "test_data": {
+          "task_count": 51
+        },
+        "expected_result": "Task creation is blocked and an error or limit restriction is shown"
+      },
+      {
+        "test_id": "FIX-3-TC-7",
+        "title": "Free-tier user sends API requests exactly at the rate limit threshold",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Free-tier user is authenticated",
+          "API rate limit counter is reset for the user"
+        ],
+        "steps": [
+          "Send 60 API requests within a 1-minute window"
+        ],
+        "test_data": {
+          "request_count": 60,
+          "time_window": "1 minute"
+        },
+        "expected_result": "All 60 API requests succeed without returning a 429 status code"
+      },
+      {
+        "test_id": "FIX-3-TC-8",
+        "title": "Free-tier user exceeds API rate limit by sending 61 requests in a minute",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Free-tier user is authenticated",
+          "User has sent 60 API requests within the current 1-minute window"
+        ],
+        "steps": [
+          "Send the 61st API request within the 1-minute window"
+        ],
+        "test_data": {
+          "request_count": "61 requests",
+          "time_window": "1 minute",
+          "tier": "Free"
+        },
+        "expected_result": "HTTP 429 response with a retry-after header is returned"
+      },
+      {
+        "test_id": "FIX-3-TC-9",
+        "title": "Pro/Team tier user exceeds API rate limit by sending 601 requests in a minute",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Pro/Team tier user is authenticated",
+          "User has sent 600 API requests within the current 1-minute window"
+        ],
+        "steps": [
+          "Send the 601st API request within the 1-minute window"
+        ],
+        "test_data": {
+          "request_count": "601 requests",
+          "time_window": "1 minute",
+          "tier": "Pro/Team"
+        },
+        "expected_result": "HTTP 429 response with a retry-after header is returned"
+      }
+    ]
+  },
+  {
+    "id": "FIX-4",
+    "test_cases": [
+      {
+        "test_id": "FIX-4-TC-1",
+        "title": "Successful invitation of a teammate with Admin role",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "The actor is logged in as a Team-plan account owner"
+        ],
+        "steps": [
+          "Navigate to the team management page",
+          "Enter teammate identifier",
+          "Select Admin role",
+          "Send invitation"
+        ],
+        "test_data": {
+          "teammate": "colleague@example.com",
+          "role": "Admin"
+        },
+        "expected_result": "Teammate receives an invitation and is assigned the Admin role upon joining."
+      },
+      {
+        "test_id": "FIX-4-TC-2",
+        "title": "Successful invitation of a teammate with Editor role",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "The actor is logged in as a Team-plan account owner"
+        ],
+        "steps": [
+          "Navigate to the team management page",
+          "Enter teammate identifier",
+          "Select Editor role",
+          "Send invitation"
+        ],
+        "test_data": {
+          "teammate": "editor@example.com",
+          "role": "Editor"
+        },
+        "expected_result": "Teammate receives an invitation and is assigned the Editor role upon joining."
+      },
+      {
+        "test_id": "FIX-4-TC-3",
+        "title": "Successful invitation of a teammate with Viewer role",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "The actor is logged in as a Team-plan account owner"
+        ],
+        "steps": [
+          "Navigate to the team management page",
+          "Enter teammate identifier",
+          "Select Viewer role",
+          "Send invitation"
+        ],
+        "test_data": {
+          "teammate": "viewer@example.com",
+          "role": "Viewer"
+        },
+        "expected_result": "Teammate receives an invitation and is assigned the Viewer role upon joining."
+      },
+      {
+        "test_id": "FIX-4-TC-4",
+        "title": "Account owner transfers ownership to an Admin",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "The actor is logged in as a Team-plan account owner",
+          "Target user holds the Admin role"
+        ],
+        "steps": [
+          "Navigate to team members settings",
+          "Select transfer ownership option for the target Admin",
+          "Confirm ownership transfer"
+        ],
+        "test_data": {
+          "teammate": "admin_user@example.com",
+          "role": "Admin"
+        },
+        "expected_result": "Ownership is successfully transferred to the selected Admin."
+      },
+      {
+        "test_id": "FIX-4-TC-5",
+        "title": "Admin attempts to remove the account owner",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "The actor is logged in as an Admin"
+        ],
+        "steps": [
+          "Navigate to team members",
+          "Attempt to remove the account owner"
+        ],
+        "test_data": {
+          "teammate": "owner@example.com"
+        },
+        "expected_result": "Action is prevented and an error or restriction is enforced."
+      },
+      {
+        "test_id": "FIX-4-TC-6",
+        "title": "Owner account deletion triggers automatic transfer to longest-tenured Admin",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "Team has multiple Admins with different tenure lengths",
+          "Owner account is active"
+        ],
+        "steps": [
+          "Initiate deletion of the account owner's account",
+          "Confirm deletion"
+        ],
+        "test_data": {
+          "teammate": "owner@example.com"
+        },
+        "expected_result": "Ownership automatically transfers to the longest-tenured Admin."
+      },
+      {
+        "test_id": "FIX-4-TC-7",
+        "title": "Prevent a user from holding multiple roles simultaneously in the same team",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "The actor is logged in as a Team-plan account owner",
+          "The target user already holds the Editor role in the team"
+        ],
+        "steps": [
+          "Navigate to team member management",
+          "Attempt to assign the Viewer role to the target user who already holds the Editor role"
+        ],
+        "test_data": {
+          "teammate": "user@example.com",
+          "role": "Viewer"
+        },
+        "expected_result": "The system prevents assigning a second role or replaces the existing role to maintain exactly one role per team."
+      },
+      {
+        "test_id": "FIX-4-TC-8",
+        "title": "Admin attempts to transfer account ownership",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "The actor is logged in as an Admin",
+          "Another Admin exists in the team"
+        ],
+        "steps": [
+          "Navigate to team settings",
+          "Attempt to initiate an ownership transfer to another Admin"
+        ],
+        "test_data": {
+          "teammate": "admin2@example.com",
+          "role": "Admin"
+        },
+        "expected_result": "The system blocks the ownership transfer action because the actor is not the account owner."
+      },
+      {
+        "test_id": "FIX-4-TC-9",
+        "title": "Owner account deletion transfers ownership to the longest-tenured Admin among multiple Admins",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "The team has an account owner",
+          "Admin A joined the team on January 1, 2023",
+          "Admin B joined the team on June 1, 2023"
+        ],
+        "steps": [
+          "Delete the account owner's account",
+          "Check the team ownership status"
+        ],
+        "test_data": {
+          "teammate": "Admin A",
+          "role": "Admin"
+        },
+        "expected_result": "Ownership automatically transfers to Admin A, the longest-tenured Admin with the earliest join date."
+      }
+    ]
+  },
+  {
+    "id": "FIX-5",
+    "test_cases": [
+      {
+        "test_id": "FIX-5-TC-1",
+        "title": "Grant full Pro features during 14-day trial",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User is eligible for a trial (one-time per account based on verified email)"
+        ],
+        "steps": [
+          "User starts the 14-day Pro trial"
+        ],
+        "test_data": {},
+        "expected_result": "User receives full Pro features during the trial period."
+      },
+      {
+        "test_id": "FIX-5-TC-2",
+        "title": "First charge occurs on day 15 when payment method is added",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has started the 14-day Pro trial"
+        ],
+        "steps": [
+          "User adds a payment method during the trial",
+          "Observe account status and billing on the day the card is added",
+          "Advance time to day 15"
+        ],
+        "test_data": {
+          "payment method": "valid_card"
+        },
+        "expected_result": "Adding a payment method during the trial does not result in an immediate charge, and the first charge occurs on day 15."
+      },
+      {
+        "test_id": "FIX-5-TC-3",
+        "title": "Prevent second trial signup with the same verified email",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "User has already completed or used a 14-day Pro trial with a verified email"
+        ],
+        "steps": [
+          "User attempts to re-sign up for a trial using the same verified email"
+        ],
+        "test_data": {
+          "verified email": "test@example.com"
+        },
+        "expected_result": "Re-signing up with the same verified email does not grant a second trial."
+      },
+      {
+        "test_id": "FIX-5-TC-4",
+        "title": "Automatic downgrade to Free on day 14 if no payment method is provided",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User started the 14-day Pro trial and added no payment method"
+        ],
+        "steps": [
+          "System checks for payment method addition and processes account status on day 14"
+        ],
+        "test_data": {},
+        "expected_result": "Account automatically downgrades to Free on day 14."
+      }
+    ]
+  },
+  {
+    "id": "FIX-6",
+    "test_cases": [
+      {
+        "test_id": "FIX-6-TC-1",
+        "title": "Export all account data before deletion",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User is logged into their account"
+        ],
+        "steps": [
+          "Navigate to account settings",
+          "Select the option to export data"
+        ],
+        "test_data": {},
+        "expected_result": "Data is exported in a machine-readable format"
+      },
+      {
+        "test_id": "FIX-6-TC-2",
+        "title": "Request account deletion and initiate grace period",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User is logged into their account"
+        ],
+        "steps": [
+          "Navigate to account deletion settings",
+          "Request account deletion"
+        ],
+        "test_data": {},
+        "expected_result": "Account deletion request initiates a 24-hour grace period"
+      },
+      {
+        "test_id": "FIX-6-TC-3",
+        "title": "Cancel account deletion during the grace period",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User has requested account deletion",
+          "The 24-hour grace period is active"
+        ],
+        "steps": [
+          "Navigate to account deletion settings",
+          "Select the option to cancel account deletion"
+        ],
+        "test_data": {},
+        "expected_result": "Account deletion is canceled successfully"
+      },
+      {
+        "test_id": "FIX-6-TC-4",
+        "title": "Permanently purge data after grace period expiration",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User has requested account deletion",
+          "The 24-hour grace period has expired without cancellation"
+        ],
+        "steps": [
+          "Wait for the grace period to expire without performing a cancellation"
+        ],
+        "test_data": {},
+        "expected_result": "Data is permanently purged after the grace period expires"
+      },
+      {
+        "test_id": "FIX-6-TC-5",
+        "title": "Team-plan export by non-owner member",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User is a non-owner member of a team-plan"
+        ],
+        "steps": [
+          "Trigger a team-plan data export as a non-owner member"
+        ],
+        "test_data": {},
+        "expected_result": "Export includes only that specific member's tasks and excludes the rest of the team's data"
+      }
+    ]
+  },
+  {
+    "id": "FIX-7",
+    "test_cases": [
+      {
+        "test_id": "FIX-7-TC-1",
+        "title": "Opt out of non-security notification type",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User is authenticated and accessing notification settings"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Modify toggle for a non-security notification type to opt out",
+          "Save changes"
+        ],
+        "test_data": {
+          "Notification Type Preferences": "false"
+        },
+        "expected_result": "Preferences are updated successfully"
+      },
+      {
+        "test_id": "FIX-7-TC-2",
+        "title": "Attempt to disable security-related notification",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User is authenticated and accessing notification settings"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Attempt to modify toggle for security-related notification (e.g., password changes or new device login) to disabled",
+          "Save changes"
+        ],
+        "test_data": {
+          "Notification Type Preferences": "false"
+        },
+        "expected_result": "Security-related notifications cannot be disabled and the toggle remains enabled or an error/prevention occurs"
+      },
+      {
+        "test_id": "FIX-7-TC-3",
+        "title": "Digest email scheduled time with user timezone set",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User is authenticated and has a local timezone set"
+        ],
+        "steps": [
+          "Configure digest email preference",
+          "Save changes"
+        ],
+        "test_data": {
+          "Notification Type Preferences": "true"
+        },
+        "expected_result": "Digest emails are sent at 9am local time based on the user's timezone"
+      },
+      {
+        "test_id": "FIX-7-TC-5",
+        "title": "Preference change applies to next scheduled notification without retroactive effect",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User is authenticated and notifications are already queued"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Modify toggle to opt out of a notification type",
+          "Save changes"
+        ],
+        "test_data": {
+          "Notification Type Preferences": "false"
+        },
+        "expected_result": "Changes take effect for the next scheduled notification without retroactively affecting already queued ones"
+      },
+      {
+        "test_id": "FIX-7-TC-5",
+        "title": "Digest email defaults to UTC when user timezone is not set",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "User is authenticated",
+          "User timezone is not set in profile settings"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Configure or trigger a digest email subscription",
+          "Check the scheduled delivery timestamp in the digest queue"
+        ],
+        "test_data": {
+          "timezone": "null",
+          "digest_time": "9:00 AM UTC"
+        },
+        "expected_result": "Digest email is scheduled for 9:00 AM UTC"
+      },
+      {
+        "test_id": "FIX-7-TC-6",
+        "title": "Digest email is scheduled for 9am in specific user timezone (PST)",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User is authenticated",
+          "User timezone is set to Pacific Standard Time (PST)"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Configure digest email preferences",
+          "Inspect the scheduled dispatch time in the notification queue"
+        ],
+        "test_data": {
+          "timezone": "PST",
+          "expected_dispatch_time": "9:00 AM PST"
+        },
+        "expected_result": "Digest email is scheduled at 9am in the user's local PST timezone"
+      },
+      {
+        "test_id": "FIX-7-TC-7",
+        "title": "Preference change does not affect already queued notifications",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User is authenticated and has a notification already queued in the system",
+          "Notification type is currently enabled"
+        ],
+        "steps": [
+          "Navigate to email notification preferences",
+          "Toggle the notification type to opt out",
+          "Save changes",
+          "Observe the delivery status of the already queued notification and the suppression of subsequent notifications"
+        ],
+        "test_data": {
+          "notification_type": "Marketing Updates",
+          "preference_state": "opted out"
+        },
+        "expected_result": "The already queued notification is still delivered and subsequent notifications are suppressed"
+      }
+    ]
+  }
+]

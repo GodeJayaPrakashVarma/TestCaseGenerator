@@ -1,7 +1,7 @@
 import json, os
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
-from utils import parse_llm_json, load_json_file, save_json_file
+from pipeline.utils import parse_llm_json, load_json_file, save_json_file, runs_path
 
 load_dotenv()
 model = init_chat_model("google_genai:gemini-3.5-flash-lite", api_key=os.getenv("GOOGLE_API_KEY"))
@@ -74,12 +74,12 @@ def coverage_verifier(structured_requirements, test_cases, traceability_report, 
 
 
 if __name__ == "__main__":
-    structured_requirements = load_json_file("structured_requirements.json", required=True,
+    structured_requirements = load_json_file(runs_path("structured_requirements.json"), required=True,
                                               hint="Run requirement_analyzer.py first.")
-    test_cases = load_json_file("test_cases.json", required=True,
+    test_cases = load_json_file(runs_path("test_cases.json"), required=True,
                                  hint="Run the pipeline first.")
-    traceability_report = load_json_file("traceability_report.json", required=True,
+    traceability_report = load_json_file(runs_path("traceability_report.json"), required=True,
                                           hint="Run traceability.py first.")
 
     results = coverage_verifier(structured_requirements, test_cases, traceability_report)
-    save_json_file("adequacy_judgments.json", results)
+    save_json_file(runs_path("adequacy_judgments.json"), results)

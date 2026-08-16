@@ -1,16 +1,11 @@
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from utils import load_json_file, save_json_file
+from pipeline.utils import load_json_file, save_json_file, runs_path
 
 _embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def duplicate_detector(test_cases, fixture_id, threshold=0.90):
-    """
-    Deterministic, no LLM. Embeds title + steps + expected_result per case,
-    clusters by cosine similarity, keeps the first occurrence in each
-    duplicate cluster.
-    """
     if len(test_cases) < 2:
         return test_cases, []
 
@@ -45,7 +40,8 @@ def duplicate_detector(test_cases, fixture_id, threshold=0.90):
     return deduped, duplicates_removed
 
 
-def run_duplicate_detector_on_file(test_cases_path="test_cases.json"):
+def run_duplicate_detector_on_file(test_cases_path=None):
+    test_cases_path = test_cases_path or runs_path("test_cases.json")   # fixed default
     data = load_json_file(
         test_cases_path, required=True,
         hint="Run the pipeline (run_pipeline.py or graph.py) first to generate test_cases.json."
@@ -57,11 +53,11 @@ def run_duplicate_detector_on_file(test_cases_path="test_cases.json"):
         fixture["test_cases"] = deduped
         all_dupes_log.extend(dupes_log)
 
-    save_json_file(test_cases_path, data)
+    save_json_file(test_cases_path, data)   # write back to the SAME path it read from
 
-    existing = load_json_file("duplicates_removed.json", required=False, default=[])
+    existing = load_json_file(runs_path("duplicates_removed.json"), required=False, default=[])
     existing.extend(all_dupes_log)
-    save_json_file("duplicates_removed.json", existing)
+    save_json_file(runs_path("duplicates_removed.json"), existing)
 
     return data, all_dupes_log
 

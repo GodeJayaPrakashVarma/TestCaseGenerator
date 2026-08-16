@@ -1,6 +1,13 @@
 import json, os
 
 
+RUNS_DIR = "runs"
+
+def runs_path(filename):
+    """Path to a generated pipeline output file, kept out of the repo root."""
+    return os.path.join(RUNS_DIR, filename)
+
+
 def extract_text(response):
     """
     Normalizes an LLM response into plain text regardless of provider.

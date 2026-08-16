@@ -1,5 +1,5 @@
 import json, os, csv
-from utils import load_json_file, save_json_file
+from pipeline.utils import load_json_file, save_json_file, runs_path
 
 
 def to_gherkin_steps(keyword, items):
@@ -70,11 +70,11 @@ def export_to_csv(test_cases_by_id, output_path="exports/test_cases.csv"):
 
 
 if __name__ == "__main__":
-    structured_requirements = load_json_file("structured_requirements.json", required=True,
+    structured_requirements = load_json_file(runs_path("structured_requirements.json"), required=True,
                                               hint="Run requirement_analyzer.py first.")
-    test_cases_by_id = load_json_file("test_cases.json", required=True,
+    test_cases_by_id = load_json_file(runs_path("test_cases.json"), required=True,
                                        hint="Run the pipeline first.")
-    review_results = load_json_file("review_results.json", required=True,
+    review_results = load_json_file(runs_path("review_results.json"), required=True,
                                      hint="Run reviewer.py or the full pipeline first.")
 
     approved_fixtures = [f for f in test_cases_by_id if review_results.get(f["id"], {}).get("approved")]
@@ -86,6 +86,6 @@ if __name__ == "__main__":
         export_to_csv(approved_fixtures)
 
     if pending_fixtures:
-        save_json_file("pending_human_review.json",
+        save_json_file(runs_path("pending_human_review.json"),
                         {f["id"]: review_results[f["id"]] for f in pending_fixtures})
         print(f"Held for human review, not exported: {[f['id'] for f in pending_fixtures]}")

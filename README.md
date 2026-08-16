@@ -35,6 +35,22 @@ flowchart TD
 
 **Export** — pure code. Only Reviewer-approved test suites get exported to Gherkin/CSV; flagged ones are held in `pending_human_review.json` pending a human decision, not silently shipped or silently dropped.
 
+## Test fixtures
+
+`requirements.yaml` holds 7 raw requirements for **TaskFlow**, a fictional B2B SaaS product — deliberately one coherent domain rather than a grab-bag of unrelated examples, because that's how a real user of this tool would actually use it: submitting related requirements for *their* one project, not a random assortment. The domain (auth, subscription billing, RBAC, usage limits) was chosen because it's the exact commercial surface almost every SaaS startup builds regardless of their actual product vertical, making it legible to any technical reviewer without requiring niche domain knowledge to evaluate.
+
+| ID | Category | What it tests |
+|---|---|---|
+| FIX-1 | auth | Signup, email verification state machine, password policy |
+| FIX-2 | billing | Plan upgrade/downgrade, proration, team-size-blocked downgrade |
+| FIX-3 | usage_limits | Free-tier caps, API rate limiting |
+| FIX-4 | rbac | Team roles, ownership transfer, orphaned-team prevention |
+| FIX-5 | billing | Trial lifecycle, auto-conversion, one-time trial eligibility |
+| FIX-6 | data_lifecycle | Two-step account deletion, scoped data export |
+| FIX-7 | notifications | Opt-out rules, timezone defaults, queued-vs-future preference changes |
+
+Each fixture is written as a self-contained `raw_requirement` string — one requirement in, one `structured_requirement` out — matching the pipeline's actual per-run contract, with real boundary values (7-day windows, 8-char passwords, 429 rate limits, 14-day trials) and deliberate ambiguity in exactly one fixture (FIX-5's trial-detection method) to verify the Requirement Analyzer flags genuinely undecided text rather than inventing gaps that aren't there.
+
 ## Design decisions worth knowing the "why" on
 
 - **Test IDs are assigned in code, never trusted from the model** — avoids ID collisions across retries and fixtures.
@@ -51,21 +67,28 @@ Python · LangGraph · LangChain · Groq (`llama-3.3-70b-versatile`) · Google G
 ## Project structure
 
 ```
-requirements.yaml              # raw requirement fixtures (input)
-requirement_analyzer.py        # Stage 1: raw requirement -> structured JSON
-testgenerator.py               # Test Generator LLM call
-dedup.py                       # deterministic duplicate detection
-traceability.py                # deterministic coverage matrix
-coverage_verifier.py           # LLM adequacy judgment
-reviewer.py                    # final quality gate, different model family
-graph.py                       # LangGraph StateGraph — orchestrates the full loop
-export.py                      # Gherkin + CSV export, gated on Reviewer approval
-utils.py                       # shared: any-model response parsing, safe file I/O
-run_pipeline.py                # single command: analyzer -> graph -> export
-create_baseline.py             # freezes current good output as CI golden baseline
-regression_check.py            # re-runs pipeline against golden baseline, flags regressions
+pipeline/                      # core library code — imported, never run directly
+├── requirement_analyzer.py    # Stage 1: raw requirement -> structured JSON
+├── testgenerator.py           # Test Generator LLM call
+├── dedup.py                   # deterministic duplicate detection
+├── traceability.py            # deterministic coverage matrix
+├── coverage_verifier.py       # LLM adequacy judgment
+├── reviewer.py                # final quality gate, different model family
+├── graph.py                   # LangGraph StateGraph — orchestrates the full loop
+├── export.py                  # Gherkin + CSV export, gated on Reviewer approval
+└── utils.py                   # shared: any-model response parsing, safe file I/O
+
+fixtures/
+└── requirements.yaml          # raw requirement fixtures (input) — see Test Fixtures below
+
 golden/                        # frozen baseline (structured_requirements, test_cases, summary)
-exports/                       # generated .feature and .csv output
+exports/                       # generated .feature and .csv output (gitignored)
+runs/                          # generated per-run JSON — snapshots gitignored, pipeline_runs.json tracked
+
+run_pipeline.py                # entry point: analyzer -> graph -> export
+create_baseline.py             # entry point: freezes current good output as CI golden baseline
+regression_check.py            # entry point: re-runs pipeline against golden baseline
+
 .github/workflows/             # CI regression workflow (manual trigger)
 ```
 
