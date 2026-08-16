@@ -1,0 +1,30 @@
+{
+  "FIX-1": {
+    "final_coverage": 1.0,
+    "review_issue_count": 2
+  },
+  "FIX-2": {
+    "final_coverage": 1.0,
+    "review_issue_count": 2
+  },
+  "FIX-3": {
+    "final_coverage": 1.0,
+    "review_issue_count": 2
+  },
+  "FIX-4": {
+    "final_coverage": 1.0,
+    "review_issue_count": 2
+  },
+  "FIX-5": {
+    "final_coverage": 1.0,
+    "review_issue_count": 2
+  },
+  "FIX-6": {
+    "final_coverage": 1.0,
+    "review_issue_count": 1
+  },
+  "FIX-7": {
+    "final_coverage": 1.0,
+    "review_issue_count": 1
+  }
+}

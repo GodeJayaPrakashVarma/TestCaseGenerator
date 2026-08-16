@@ -1,0 +1,970 @@
+[
+  {
+    "id": "FIX-1",
+    "test_cases": [
+      {
+        "test_id": "FIX-1-TC-1",
+        "title": "Sign up with valid email and password",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [],
+        "steps": [
+          "Enter a valid email address",
+          "Enter a valid password that is at least 8 characters and not one of the 100 most commonly used passwords",
+          "Submit the sign up form"
+        ],
+        "test_data": {
+          "email": "user@example.com",
+          "password": "Password123"
+        },
+        "expected_result": "Account is created and email verification link is sent"
+      },
+      {
+        "test_id": "FIX-1-TC-2",
+        "title": "Receive email verification link",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User has signed up with a valid email and password"
+        ],
+        "steps": [
+          "Check the email inbox for the verification link"
+        ],
+        "test_data": {
+          "email": "user@example.com"
+        },
+        "expected_result": "Email verification link is received"
+      },
+      {
+        "test_id": "FIX-1-TC-3",
+        "title": "Log in with unverified account",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "User has signed up with a valid email and password but has not verified their email"
+        ],
+        "steps": [
+          "Enter the email address and password to log in"
+        ],
+        "test_data": {
+          "email": "user@example.com",
+          "password": "Password123"
+        },
+        "expected_result": "User can log in but only has read-only access"
+      },
+      {
+        "test_id": "FIX-1-TC-4",
+        "title": "Account suspension after 7 days",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User has signed up with a valid email and password but has not verified their email for 7 days"
+        ],
+        "steps": [
+          "Wait for 7 days after sign up"
+        ],
+        "test_data": {
+          "email": "user@example.com"
+        },
+        "expected_result": "Account is suspended"
+      },
+      {
+        "test_id": "FIX-1-TC-5",
+        "title": "Account activation after email verification",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User has signed up with a valid email and password and has received the verification link"
+        ],
+        "steps": [
+          "Click the verification link in the email"
+        ],
+        "test_data": {
+          "email": "user@example.com"
+        },
+        "expected_result": "Account is activated"
+      },
+      {
+        "test_id": "FIX-1-TC-6",
+        "title": "Reject password less than 8 characters",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [],
+        "steps": [
+          "Enter a valid email address",
+          "Enter a password that is less than 8 characters",
+          "Submit the sign up form"
+        ],
+        "test_data": {
+          "email": "user@example.com",
+          "password": "Pass"
+        },
+        "expected_result": "System rejects the password"
+      },
+      {
+        "test_id": "FIX-1-TC-7",
+        "title": "Reject one of the 100 most commonly used passwords",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [],
+        "steps": [
+          "Enter a valid email address",
+          "Enter one of the 100 most commonly used passwords",
+          "Submit the sign up form"
+        ],
+        "test_data": {
+          "email": "user@example.com",
+          "password": "password"
+        },
+        "expected_result": "System rejects the password"
+      },
+      {
+        "test_id": "FIX-1-TC-8",
+        "title": "Unverified account has read-only access for 7 days",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has signed up with valid email and password",
+          "user has not verified email"
+        ],
+        "steps": [
+          "log in with unverified account",
+          "attempt to perform write operation"
+        ],
+        "test_data": {
+          "email": "test@example.com",
+          "password": "password123"
+        },
+        "expected_result": "user is granted read-only access and write operation is denied"
+      },
+      {
+        "test_id": "FIX-1-TC-9",
+        "title": "Unverified account is suspended after 7 days",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "user has signed up with valid email and password",
+          "user has not verified email",
+          "7 days have passed since sign up"
+        ],
+        "steps": [
+          "attempt to log in with unverified account"
+        ],
+        "test_data": {
+          "email": "test@example.com",
+          "password": "password123"
+        },
+        "expected_result": "user account is suspended and login is denied"
+      }
+    ]
+  },
+  {
+    "id": "FIX-2",
+    "test_cases": [
+      {
+        "test_id": "FIX-2-TC-1",
+        "title": "Upgrade to Pro plan with remaining days in billing cycle",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "user is logged in",
+          "user has a valid payment method"
+        ],
+        "steps": [
+          "user initiates upgrade to Pro plan",
+          "system checks billing cycle",
+          "system prorates charge"
+        ],
+        "test_data": {
+          "new plan": "Pro"
+        },
+        "expected_result": "user is charged prorated amount based on days remaining in billing cycle"
+      },
+      {
+        "test_id": "FIX-2-TC-3",
+        "title": "Downgrade from Pro to Free plan",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "user is logged in",
+          "user has a valid payment method",
+          "user is currently on Pro plan"
+        ],
+        "steps": [
+          "user initiates downgrade to Free plan"
+        ],
+        "test_data": {
+          "new plan": "Free"
+        },
+        "expected_result": "downgrade takes effect at the end of the current billing period"
+      },
+      {
+        "test_id": "FIX-2-TC-4",
+        "title": "Downgrade from Team to Pro plan with team size within Pro limit",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user is logged in",
+          "user has a valid payment method",
+          "user is currently on Team plan",
+          "team size is within Pro limit"
+        ],
+        "steps": [
+          "user initiates downgrade to Pro plan"
+        ],
+        "test_data": {
+          "new plan": "Pro",
+          "team size": 5
+        },
+        "expected_result": "downgrade is successful"
+      },
+      {
+        "test_id": "FIX-2-TC-6",
+        "title": "Upgrade to invalid plan",
+        "category": "negative",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "user is logged in",
+          "user has a valid payment method"
+        ],
+        "steps": [
+          "user initiates upgrade to invalid plan"
+        ],
+        "test_data": {
+          "new plan": "Enterprise"
+        },
+        "expected_result": "upgrade is unsuccessful"
+      }
+    ]
+  },
+  {
+    "id": "FIX-3",
+    "test_cases": [
+      {
+        "test_id": "FIX-3-TC-1",
+        "title": "Create 3 active projects",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [],
+        "steps": [
+          "Create project 1",
+          "Create project 2",
+          "Create project 3"
+        ],
+        "test_data": {},
+        "expected_result": "3 projects are created"
+      },
+      {
+        "test_id": "FIX-3-TC-2",
+        "title": "Create 4th project and get upgrade prompt",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "3 active projects exist"
+        ],
+        "steps": [
+          "Create project 4"
+        ],
+        "test_data": {},
+        "expected_result": "Upgrade prompt is shown"
+      },
+      {
+        "test_id": "FIX-3-TC-3",
+        "title": "Create 50 tasks per project",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "1 active project exists"
+        ],
+        "steps": [
+          "Create 50 tasks in project 1"
+        ],
+        "test_data": {},
+        "expected_result": "50 tasks are created"
+      },
+      {
+        "test_id": "FIX-3-TC-4",
+        "title": "Exceed rate limit and get 429 error",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [],
+        "steps": [
+          "Make 61 API requests within 1 minute"
+        ],
+        "test_data": {},
+        "expected_result": "429 error is returned"
+      },
+      {
+        "test_id": "FIX-3-TC-5",
+        "title": "Get retry-after header in 429 error response",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Rate limit is exceeded"
+        ],
+        "steps": [
+          "Make API request after exceeding rate limit"
+        ],
+        "test_data": {},
+        "expected_result": "retry-after header is included in response"
+      },
+      {
+        "test_id": "FIX-3-TC-6",
+        "title": "Create project at rate limit boundary",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "59 API requests made within 1 minute"
+        ],
+        "steps": [
+          "Create project"
+        ],
+        "test_data": {},
+        "expected_result": "Project is created without 429 error"
+      },
+      {
+        "test_id": "FIX-3-TC-7",
+        "title": "Exceed task cap per project",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "1 active project exists"
+        ],
+        "steps": [
+          "Create 51 tasks in project 1"
+        ],
+        "test_data": {},
+        "expected_result": "Task creation fails"
+      },
+      {
+        "test_id": "FIX-3-TC-8",
+        "title": "Create 3 active projects within rate limit",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [],
+        "steps": [
+          "Create 3 projects within 1 minute"
+        ],
+        "test_data": {
+          "projects": 3,
+          "time": 1
+        },
+        "expected_result": "3 projects are created"
+      },
+      {
+        "test_id": "FIX-3-TC-9",
+        "title": "Create 50 tasks per project within rate limit",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "1 project exists"
+        ],
+        "steps": [
+          "Create 50 tasks for the existing project within 1 minute"
+        ],
+        "test_data": {
+          "tasks": 50,
+          "time": 1
+        },
+        "expected_result": "50 tasks are created for the project"
+      },
+      {
+        "test_id": "FIX-3-TC-10",
+        "title": "Create project at rate limit boundary",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "59 API requests have been made within the last minute"
+        ],
+        "steps": [
+          "Make 1 more API request to create a project"
+        ],
+        "test_data": {
+          "requests": 59,
+          "time": 1
+        },
+        "expected_result": "Project is created and 60th request is allowed"
+      },
+      {
+        "test_id": "FIX-3-TC-11",
+        "title": "Exceed rate limit and get 429 error",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "60 API requests have been made within the last minute"
+        ],
+        "steps": [
+          "Make 1 more API request to create a project"
+        ],
+        "test_data": {
+          "requests": 60,
+          "time": 1
+        },
+        "expected_result": "429 error is returned with retry-after header"
+      },
+      {
+        "test_id": "FIX-3-TC-12",
+        "title": "Get retry-after header in 429 error response",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "60 API requests have been made within the last minute"
+        ],
+        "steps": [
+          "Make 1 more API request to create a project"
+        ],
+        "test_data": {
+          "requests": 60,
+          "time": 1
+        },
+        "expected_result": "retry-after header is included in the 429 error response"
+      },
+      {
+        "test_id": "FIX-3-TC-13",
+        "title": "Exceed Pro/Team rate limit",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User has Pro/Team tier account",
+          "No ongoing API requests"
+        ],
+        "steps": [
+          "Make 601 API requests within 1 minute"
+        ],
+        "test_data": {
+          "requests": 601,
+          "time": "1 minute"
+        },
+        "expected_result": "429 error with retry-after header is returned"
+      },
+      {
+        "test_id": "FIX-3-TC-14",
+        "title": "Reach Pro/Team rate limit boundary",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "User has Pro/Team tier account",
+          "No ongoing API requests"
+        ],
+        "steps": [
+          "Make 600 API requests within 1 minute"
+        ],
+        "test_data": {
+          "requests": 600,
+          "time": "1 minute"
+        },
+        "expected_result": "No 429 error is returned"
+      }
+    ]
+  },
+  {
+    "id": "FIX-4",
+    "test_cases": [
+      {
+        "test_id": "FIX-4-TC-1",
+        "title": "Account owner invites teammate and assigns role",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [],
+        "steps": [
+          "Log in as account owner",
+          "Invite a new teammate",
+          "Assign a role to the teammate"
+        ],
+        "test_data": {
+          "teammate": "John Doe",
+          "role": "Editor"
+        },
+        "expected_result": "Teammate is assigned the role"
+      },
+      {
+        "test_id": "FIX-4-TC-2",
+        "title": "Account owner transfers ownership to another Admin",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "Account owner has already invited and assigned an Admin role to another teammate"
+        ],
+        "steps": [
+          "Log in as account owner",
+          "Transfer ownership to the Admin teammate"
+        ],
+        "test_data": {
+          "teammate": "Jane Smith",
+          "role": "Admin"
+        },
+        "expected_result": "Ownership is transferred to the Admin teammate"
+      },
+      {
+        "test_id": "FIX-4-TC-3",
+        "title": "Admin attempts to remove account owner",
+        "category": "negative",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "Account owner has already invited and assigned an Admin role to another teammate"
+        ],
+        "steps": [
+          "Log in as Admin teammate",
+          "Attempt to remove the account owner"
+        ],
+        "test_data": {
+          "teammate": "Jane Smith",
+          "role": "Admin"
+        },
+        "expected_result": "Admin is unable to remove the account owner"
+      },
+      {
+        "test_id": "FIX-4-TC-4",
+        "title": "Ownership transfer when account owner's account is deleted",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "Account owner has already invited and assigned an Admin role to another teammate",
+          "There are multiple Admins with different tenure"
+        ],
+        "steps": [
+          "Log in as system administrator",
+          "Delete the account owner's account"
+        ],
+        "test_data": {
+          "teammate": "Bob Johnson",
+          "role": "Admin"
+        },
+        "expected_result": "Ownership is transferred to the longest-tenured Admin"
+      },
+      {
+        "test_id": "FIX-4-TC-5",
+        "title": "Account owner attempts to assign multiple roles to a teammate",
+        "category": "negative",
+        "linked_rule_ids": [],
+        "preconditions": [],
+        "steps": [
+          "Log in as account owner",
+          "Invite a new teammate",
+          "Attempt to assign multiple roles to the teammate"
+        ],
+        "test_data": {
+          "teammate": "John Doe",
+          "role": "Editor, Admin"
+        },
+        "expected_result": "Account owner is unable to assign multiple roles to the teammate"
+      }
+    ]
+  },
+  {
+    "id": "FIX-5",
+    "test_cases": [
+      {
+        "test_id": "FIX-5-TC-1",
+        "title": "Start 14-day Pro trial with full Pro features",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "user has not started a Pro trial before"
+        ],
+        "steps": [
+          "start 14-day Pro trial"
+        ],
+        "test_data": {},
+        "expected_result": "user has full Pro features during the 14-day trial"
+      },
+      {
+        "test_id": "FIX-5-TC-2",
+        "title": "Add payment method during trial",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "user has started a 14-day Pro trial",
+          "no payment method is added"
+        ],
+        "steps": [
+          "add payment method during trial"
+        ],
+        "test_data": {
+          "payment method": "valid payment details"
+        },
+        "expected_result": "first charge occurs on day 15"
+      },
+      {
+        "test_id": "FIX-5-TC-3",
+        "title": "Account downgrades to Free on day 14 with no payment method",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has started a 14-day Pro trial",
+          "no payment method is added"
+        ],
+        "steps": [],
+        "test_data": {},
+        "expected_result": "account downgrades to Free on day 14"
+      },
+      {
+        "test_id": "FIX-5-TC-4",
+        "title": "Cannot start a second trial with the same verified email",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "user has started a Pro trial before"
+        ],
+        "steps": [
+          "attempt to start a new 14-day Pro trial"
+        ],
+        "test_data": {
+          "email": "verified email used in previous trial"
+        },
+        "expected_result": "trial start is denied"
+      },
+      {
+        "test_id": "FIX-5-TC-6",
+        "title": "Boundary case - trial ends on day 14 with no payment method",
+        "category": "boundary",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has started a 14-day Pro trial",
+          "no payment method is added"
+        ],
+        "steps": [],
+        "test_data": {},
+        "expected_result": "account downgrades to Free on day 14"
+      },
+      {
+        "test_id": "FIX-5-TC-7",
+        "title": "Edge case - add payment method on day 14",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "user has started a 14-day Pro trial",
+          "no payment method is added"
+        ],
+        "steps": [
+          "add payment method on day 14"
+        ],
+        "test_data": {
+          "payment method": "valid payment details"
+        },
+        "expected_result": "first charge occurs on day 15"
+      },
+      {
+        "test_id": "FIX-5-TC-7",
+        "title": "Account downgrades to Free on day 15 with no payment method added during trial",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has started a 14-day Pro trial",
+          "no payment method has been added during the trial"
+        ],
+        "steps": [
+          "start a 14-day Pro trial",
+          "wait until day 15 without adding a payment method",
+          "check the account status on day 15"
+        ],
+        "test_data": {
+          "payment method": "none"
+        },
+        "expected_result": "account is downgraded to Free"
+      }
+    ]
+  },
+  {
+    "id": "FIX-6",
+    "test_cases": [
+      {
+        "test_id": "FIX-6-TC-1",
+        "title": "User can export data before deleting account",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "User has an account"
+        ],
+        "steps": [
+          "User requests account deletion",
+          "User requests data export"
+        ],
+        "test_data": {
+          "export_format": "machine-readable"
+        },
+        "expected_result": "Data is exported in machine-readable format"
+      },
+      {
+        "test_id": "FIX-6-TC-2",
+        "title": "Account deletion after 24-hour grace period",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has requested account deletion"
+        ],
+        "steps": [
+          "Wait for 24 hours"
+        ],
+        "test_data": {},
+        "expected_result": "Account is deleted"
+      },
+      {
+        "test_id": "FIX-6-TC-3",
+        "title": "Cancel account deletion during 24-hour grace period",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has requested account deletion",
+          "24-hour grace period has not expired"
+        ],
+        "steps": [
+          "User cancels account deletion"
+        ],
+        "test_data": {},
+        "expected_result": "Account deletion is cancelled"
+      },
+      {
+        "test_id": "FIX-6-TC-4",
+        "title": "Non-owner team member can only export their own tasks",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "User is a non-owner team member"
+        ],
+        "steps": [
+          "User requests team-plan export"
+        ],
+        "test_data": {},
+        "expected_result": "Export only includes user's own tasks"
+      },
+      {
+        "test_id": "FIX-6-TC-5",
+        "title": "Data is not lost if deletion is cancelled",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "User has requested account deletion",
+          "24-hour grace period has not expired"
+        ],
+        "steps": [
+          "User cancels account deletion",
+          "User accesses their data"
+        ],
+        "test_data": {},
+        "expected_result": "Data is still available"
+      }
+    ]
+  },
+  {
+    "id": "FIX-7",
+    "test_cases": [
+      {
+        "test_id": "FIX-7-TC-1",
+        "title": "User can opt out of individual notification types",
+        "category": "functional",
+        "linked_rule_ids": [],
+        "preconditions": [
+          "user has configured notification preferences"
+        ],
+        "steps": [
+          "user selects a notification type to opt out of",
+          "user saves notification preferences"
+        ],
+        "test_data": {
+          "notification types": "newsletters"
+        },
+        "expected_result": "user does not receive opted-out notification type"
+      },
+      {
+        "test_id": "FIX-7-TC-2",
+        "title": "Security-related notifications are always sent",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-1"
+        ],
+        "preconditions": [
+          "user has configured notification preferences"
+        ],
+        "steps": [
+          "user attempts to disable security-related notifications",
+          "user saves notification preferences"
+        ],
+        "test_data": {
+          "notification types": "security-related"
+        },
+        "expected_result": "security-related notifications are still sent to user"
+      },
+      {
+        "test_id": "FIX-7-TC-3",
+        "title": "Digest emails are sent at the correct time based on the user's timezone",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2"
+        ],
+        "preconditions": [
+          "user has configured notification preferences",
+          "user has set a timezone"
+        ],
+        "steps": [
+          "user sets digest email time",
+          "user saves notification preferences"
+        ],
+        "test_data": {
+          "timezone": "America/New_York",
+          "digest email time": "10:00"
+        },
+        "expected_result": "digest email is sent at 10:00 America/New_York time"
+      },
+      {
+        "test_id": "FIX-7-TC-5",
+        "title": "Changes to notification preferences do not affect queued notifications",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-4"
+        ],
+        "preconditions": [
+          "user has configured notification preferences",
+          "there are queued notifications"
+        ],
+        "steps": [
+          "user changes notification preferences",
+          "user saves notification preferences"
+        ],
+        "test_data": {
+          "notification types": "newsletters"
+        },
+        "expected_result": "queued notifications are sent according to previous preferences"
+      },
+      {
+        "test_id": "FIX-7-TC-7",
+        "title": "Invalid timezone does not prevent digest email from being sent",
+        "category": "edge_case",
+        "linked_rule_ids": [
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has configured notification preferences",
+          "user has set an invalid timezone"
+        ],
+        "steps": [
+          "user saves notification preferences"
+        ],
+        "test_data": {
+          "timezone": "Invalid/Timezone",
+          "digest email time": "10:00"
+        },
+        "expected_result": "digest email is sent at 9:00 UTC"
+      },
+      {
+        "test_id": "FIX-7-TC-6",
+        "title": "Digest email sent at default time when no time is set",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2",
+          "BR-3"
+        ],
+        "preconditions": [
+          "user has not set a digest email time",
+          "user has not set a timezone"
+        ],
+        "steps": [
+          "user configures notification preferences without setting a digest email time",
+          "user does not set a timezone"
+        ],
+        "test_data": {
+          "notification types": "all",
+          "timezone": "",
+          "digest email time": ""
+        },
+        "expected_result": "digest email is sent at 9:00 UTC"
+      },
+      {
+        "test_id": "FIX-7-TC-8",
+        "title": "Digest email sent at 9am local time when user changes timezone and no digest email time is specified",
+        "category": "functional",
+        "linked_rule_ids": [
+          "BR-2",
+          "BR-3"
+        ],
+        "preconditions": [
+          "User has a set timezone",
+          "No digest email time is specified",
+          "User changes timezone"
+        ],
+        "steps": [
+          "User configures notification preferences with a new timezone and no digest email time",
+          "System stores updated preferences",
+          "System sends digest email"
+        ],
+        "test_data": {
+          "field": "timezone",
+          "value": "Europe/London"
+        },
+        "expected_result": "Digest email is sent at 9:00 Europe/London time"
+      }
+    ]
+  }
+]

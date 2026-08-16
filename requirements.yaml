@@ -1,0 +1,86 @@
+requirements:
+  - id: FIX-1
+    category: auth
+    label: Signup & email verification state
+    raw_requirement: >-
+      As a new user, I want to sign up with my email and password so I can start
+      using TaskFlow. Email must be verified via a confirmation link before the
+      account is fully activated; unverified accounts can still log in but are
+      limited to read-only access for 7 days, after which they're automatically
+      suspended. Password must be at least 8 characters, and the system should
+      reject the 100 most commonly used passwords rather than just checking length.
+
+  - id: FIX-2
+    category: billing
+    label: Plan upgrade/downgrade proration and timing
+    raw_requirement: >-
+      As a Free-tier user, I want to upgrade to the Pro plan so I can access
+      advanced features immediately. Upgrading mid-billing-cycle should prorate
+      the charge based on days remaining in the current cycle. Downgrading from
+      Pro to Free should NOT be immediate — it should take effect at the end of
+      the current billing period, and the user keeps Pro features until then.
+      If a Team-plan user downgrades to Pro and currently has more team members
+      than Pro allows, the downgrade should be blocked until they remove members,
+      not silently truncate the team.
+
+  - id: FIX-3
+    category: usage_limits
+    label: Plan caps and API rate limiting
+    raw_requirement: >-
+      As a Free-tier user, I want to create tasks and projects so I can organize
+      my work. The Free tier is capped at 3 active projects and 50 tasks per
+      project. Attempting to create a project beyond the cap should show an
+      upgrade prompt, not a generic error. API requests are rate-limited to 60
+      requests/minute for Free tier and 600/minute for Pro/Team; exceeding the
+      limit should return a 429 with a retry-after header, not silently drop
+      the request.
+
+  - id: FIX-4
+    category: rbac
+    label: Team roles and ownership transfer
+    raw_requirement: >-
+      As a Team-plan account owner, I want to invite teammates and assign them
+      roles (Admin, Editor, Viewer) so I can control who can do what. A user
+      holds exactly one role per team. Only the account owner can transfer
+      ownership to another Admin; Admins cannot remove the owner. If the
+      owner's account is deleted, ownership should automatically transfer to
+      the longest-tenured Admin rather than leaving the team ownerless.
+
+  - id: FIX-5
+    category: billing
+    label: Trial lifecycle and auto-conversion
+    raw_requirement: >-
+      As a user starting a 14-day Pro trial, I want full Pro features during
+      the trial so I can evaluate the product before paying. If no payment
+      method is added by day 14, the account should automatically downgrade
+      to Free rather than continuing Pro access unpaid. If a payment method
+      IS added during the trial, the first charge should not occur until day
+      15, not immediately on adding the card. Trial eligibility is one-time
+      per account — re-signing up with the same verified email should not
+      grant a second trial, though the exact detection method (email match
+      only, or also payment fingerprint) isn't finalized.
+
+  - id: FIX-6
+    category: data_lifecycle
+    label: Account deletion and scoped data export
+    raw_requirement: >-
+      As a user, I want to export all my data before deleting my account, so
+      I don't lose my work. Account deletion is a two-step process: request
+      deletion, then a 24-hour grace period during which the user can cancel
+      it, after which data is permanently purged. Data export includes all
+      projects/tasks in a machine-readable format; a team-plan export
+      triggered by a non-owner member should only include that member's own
+      tasks, not the whole team's data.
+
+  - id: FIX-7
+    category: notifications
+    label: Notification preferences and digest timing
+    raw_requirement: >-
+      As a user, I want to control which email notifications I receive, so
+      I'm not overwhelmed. Users can opt out of individual notification
+      types, but security-related notifications (password changes, new
+      device login) cannot be disabled. Digest emails are sent at a time
+      based on the user's timezone, defaulting to 9am local time; if
+      timezone isn't set, default to UTC. Changing notification preferences
+      should take effect for the next scheduled notification, not
+      retroactively affect ones already queued.

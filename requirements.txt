@@ -1,0 +1,7 @@
+langchain
+langchain-groq
+langchain-google-genai
+python-dotenv
+pyyaml
+sentence-transformers
+scikit-learn

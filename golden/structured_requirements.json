@@ -1,0 +1,419 @@
+[
+  {
+    "id": "FIX-1",
+    "structured_requirement": {
+      "feature_name": "User Sign Up",
+      "actor": "new user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "submit email and password",
+        "receive email verification link",
+        "click verification link to activate account"
+      ],
+      "inputs": [
+        {
+          "field": "email",
+          "type": "string",
+          "constraints": "valid email format"
+        },
+        {
+          "field": "password",
+          "type": "string",
+          "constraints": "at least 8 characters, not in the 100 most commonly used passwords"
+        }
+      ],
+      "expected_outcomes": [
+        "account created with read-only access",
+        "email verification link sent",
+        "account activated after verification",
+        "account suspended after 7 days if not verified"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "password length validation",
+          "type": "validation",
+          "source_text": "Password must be at least 8 characters"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "common password rejection",
+          "type": "validation",
+          "source_text": "reject the 100 most commonly used passwords"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "account activation via email verification",
+          "type": "state_transition",
+          "source_text": "Email must be verified via a confirmation link before the account is fully activated"
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "unverified account access limitation",
+          "type": "authorization",
+          "source_text": "unverified accounts can still log in but are limited to read-only access for 7 days"
+        },
+        {
+          "rule_id": "BR-5",
+          "description": "account suspension after 7 days",
+          "type": "state_transition",
+          "source_text": "after which they're automatically suspended"
+        }
+      ],
+      "acceptance_criteria": [
+        "new user can sign up with email and password",
+        "email verification link is sent after sign up",
+        "account is activated after email verification",
+        "unverified account has read-only access for 7 days",
+        "unverified account is suspended after 7 days",
+        "passwords less than 8 characters are rejected",
+        "commonly used passwords are rejected"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-2",
+    "structured_requirement": {
+      "feature_name": "Plan Upgrade",
+      "actor": "Free-tier user",
+      "preconditions": [
+        "user is on Free-tier plan"
+      ],
+      "main_flow_steps": [
+        "user initiates upgrade to Pro plan",
+        "system checks billing cycle",
+        "system prorates charge for remaining days",
+        "upgrade is applied"
+      ],
+      "inputs": [
+        {
+          "field": "new plan",
+          "type": "string",
+          "constraints": "Pro plan"
+        }
+      ],
+      "expected_outcomes": [
+        "user gains access to advanced features",
+        "charge is prorated based on days remaining in billing cycle"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "prorate charge based on days remaining in billing cycle when upgrading mid-billing-cycle",
+          "type": "calculation",
+          "source_text": "Upgrading mid-billing-cycle should prorate the charge based on days remaining in the current cycle"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "downgrade from Pro to Free takes effect at end of current billing period",
+          "type": "state_transition",
+          "source_text": "Downgrading from Pro to Free should NOT be immediate \u2014 it should take effect at the end of the current billing period"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "block downgrade from Team to Pro if team has more members than Pro allows",
+          "type": "validation",
+          "source_text": "If a Team-plan user downgrades to Pro and currently has more team members than Pro allows, the downgrade should be blocked until they remove members"
+        }
+      ],
+      "acceptance_criteria": [
+        "user can access advanced features after upgrading to Pro",
+        "charge is prorated correctly when upgrading mid-billing-cycle",
+        "downgrade from Pro to Free takes effect at end of billing period",
+        "downgrade from Team to Pro is blocked if team has too many members"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-3",
+    "structured_requirement": {
+      "feature_name": "Task and Project Creation",
+      "actor": "Free-tier user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "Create tasks",
+        "Create projects"
+      ],
+      "inputs": [
+        {
+          "field": "project",
+          "type": "string",
+          "constraints": "none"
+        },
+        {
+          "field": "task",
+          "type": "string",
+          "constraints": "none"
+        }
+      ],
+      "expected_outcomes": [
+        "Tasks and projects are created",
+        "Upgrade prompt is shown when project cap is exceeded",
+        "429 error with retry-after header is returned when rate limit is exceeded"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Free tier project cap",
+          "type": "validation",
+          "source_text": "The Free tier is capped at 3 active projects"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Free tier task cap",
+          "type": "validation",
+          "source_text": "50 tasks per project"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Rate limit for Free tier",
+          "type": "validation",
+          "source_text": "API requests are rate-limited to 60 requests/minute for Free tier"
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "Rate limit for Pro/Team tier",
+          "type": "validation",
+          "source_text": "600/minute for Pro/Team"
+        }
+      ],
+      "acceptance_criteria": [
+        "User can create tasks and projects",
+        "User is prompted to upgrade when creating a project beyond the cap",
+        "User receives a 429 error with retry-after header when exceeding the rate limit"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-4",
+    "structured_requirement": {
+      "feature_name": "Team Role Management",
+      "actor": "Team-plan account owner",
+      "preconditions": [],
+      "main_flow_steps": [
+        "Invite teammates",
+        "Assign teammates roles",
+        "Transfer ownership to another Admin"
+      ],
+      "inputs": [
+        {
+          "field": "teammate",
+          "type": "user",
+          "constraints": "must be invited"
+        },
+        {
+          "field": "role",
+          "type": "string",
+          "constraints": "must be one of Admin, Editor, Viewer"
+        }
+      ],
+      "expected_outcomes": [
+        "Teammates are assigned roles",
+        "Ownership is transferred to another Admin",
+        "Longest-tenured Admin becomes owner if original owner's account is deleted"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "A user holds exactly one role per team",
+          "type": "validation",
+          "source_text": "A user holds exactly one role per team"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Only the account owner can transfer ownership to another Admin",
+          "type": "authorization",
+          "source_text": "Only the account owner can transfer ownership to another Admin"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Admins cannot remove the owner",
+          "type": "authorization",
+          "source_text": "Admins cannot remove the owner"
+        },
+        {
+          "rule_id": "BR-4",
+          "description": "Ownership transfers to longest-tenured Admin if owner's account is deleted",
+          "type": "state_transition",
+          "source_text": "ownership should automatically transfer to the longest-tenured Admin rather than leaving the team ownerless"
+        }
+      ],
+      "acceptance_criteria": [
+        "Teammates can only hold one role per team",
+        "Only the account owner can transfer ownership",
+        "Admins cannot remove the owner",
+        "Longest-tenured Admin becomes owner if original owner's account is deleted"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-5",
+    "structured_requirement": {
+      "feature_name": "Pro Trial Period",
+      "actor": "user on Pro trial",
+      "preconditions": [
+        "user has not previously used a Pro trial with the same account"
+      ],
+      "main_flow_steps": [
+        "user starts 14-day Pro trial",
+        "user has access to full Pro features during the trial",
+        "if payment method is added, account remains Pro after trial",
+        "if no payment method is added, account downgrades to Free on day 14"
+      ],
+      "inputs": [
+        {
+          "field": "payment method",
+          "type": "payment information",
+          "constraints": ""
+        }
+      ],
+      "expected_outcomes": [
+        "user has full Pro features during the 14-day trial",
+        "account downgrades to Free on day 14 if no payment method is added",
+        "first charge occurs on day 15 if payment method is added during the trial"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "one-time trial eligibility per account",
+          "type": "authorization",
+          "source_text": "Trial eligibility is one-time per account"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "no immediate charge on adding payment method",
+          "type": "calculation",
+          "source_text": "the first charge should not occur until day 15, not immediately on adding the card"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "automatic downgrade to Free on day 14 without payment method",
+          "type": "state_transition",
+          "source_text": "the account should automatically downgrade to Free rather than continuing Pro access unpaid"
+        }
+      ],
+      "acceptance_criteria": [
+        "user has full Pro features during the 14-day trial",
+        "account downgrades to Free on day 14 if no payment method is added",
+        "first charge occurs on day 15 if payment method is added during the trial",
+        "user cannot start a second Pro trial with the same account"
+      ],
+      "ambiguities": [
+        "detection method for previous trial eligibility (email match only, or also payment fingerprint) isn't finalized"
+      ]
+    }
+  },
+  {
+    "id": "FIX-6",
+    "structured_requirement": {
+      "feature_name": "Account Deletion and Data Export",
+      "actor": "user",
+      "preconditions": [],
+      "main_flow_steps": [
+        "request account deletion",
+        "wait for 24-hour grace period",
+        "cancel deletion (optional)",
+        "permanently purge data"
+      ],
+      "inputs": [
+        {
+          "field": "deletion request",
+          "type": "boolean",
+          "constraints": "none"
+        },
+        {
+          "field": "cancellation request",
+          "type": "boolean",
+          "constraints": "within 24-hour grace period"
+        }
+      ],
+      "expected_outcomes": [
+        "data is exported in machine-readable format",
+        "account is deleted after 24-hour grace period",
+        "deletion is cancelled if requested within 24-hour grace period"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "team-plan export scope for non-owner members",
+          "type": "authorization",
+          "source_text": "a team-plan export triggered by a non-owner member should only include that member's own tasks"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "account deletion grace period",
+          "type": "state_transition",
+          "source_text": "24-hour grace period during which the user can cancel it"
+        }
+      ],
+      "acceptance_criteria": [
+        "user can export all projects and tasks in machine-readable format",
+        "team-plan export by non-owner member only includes their own tasks",
+        "account deletion is cancelled if requested within 24-hour grace period",
+        "account is permanently deleted after 24-hour grace period"
+      ],
+      "ambiguities": []
+    }
+  },
+  {
+    "id": "FIX-7",
+    "structured_requirement": {
+      "feature_name": "Notification Preferences",
+      "actor": "User",
+      "preconditions": [],
+      "main_flow_steps": [
+        "User views notification preferences",
+        "User selects notification types to opt out of",
+        "User saves changes"
+      ],
+      "inputs": [
+        {
+          "field": "Notification types",
+          "type": "Selection",
+          "constraints": "Security-related notifications cannot be disabled"
+        },
+        {
+          "field": "Timezone",
+          "type": "Timezone",
+          "constraints": "Defaults to 9am local time if set, otherwise UTC"
+        }
+      ],
+      "expected_outcomes": [
+        "Notification preferences are updated",
+        "Digest emails are sent at the selected time",
+        "Changes take effect for the next scheduled notification"
+      ],
+      "business_rules": [
+        {
+          "rule_id": "BR-1",
+          "description": "Security-related notifications cannot be disabled",
+          "type": "validation",
+          "source_text": "security-related notifications (password changes, new device login) cannot be disabled"
+        },
+        {
+          "rule_id": "BR-2",
+          "description": "Digest email send time is based on user's timezone",
+          "type": "calculation",
+          "source_text": "Digest emails are sent at a time based on the user's timezone, defaulting to 9am local time"
+        },
+        {
+          "rule_id": "BR-3",
+          "description": "Changes do not affect already queued notifications",
+          "type": "state_transition",
+          "source_text": "Changing notification preferences should take effect for the next scheduled notification, not retroactively affect ones already queued"
+        }
+      ],
+      "acceptance_criteria": [
+        "User can opt out of individual notification types",
+        "Security-related notifications are always sent",
+        "Digest emails are sent at the correct time based on user's timezone",
+        "Changes to notification preferences take effect for the next scheduled notification"
+      ],
+      "ambiguities": []
+    }
+  }
+]
