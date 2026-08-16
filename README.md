@@ -8,14 +8,14 @@ The core idea: an LLM generating test cases isn't interesting on its own. What's
 
 ```mermaid
 flowchart TD
-    A[requirements.yaml] --> B[Requirement Analyzer — LLM, Groq]
+    A[requirements.yaml] --> B[Requirement Analyzer — LLM]
     B --> C[structured_requirements.json]
-    C --> D[Test Generator — LLM, Groq]
+    C --> D[Test Generator — LLM]
     D --> E[Duplicate Detector — deterministic]
     E --> F[Traceability Matrix — deterministic]
-    F --> G[Coverage Verifier — LLM, Gemini]
+    F --> G[Coverage Verifier — LLM]
     G -->|gaps found, retries left| D
-    G -->|no gaps or max retries| H[Reviewer Agent — LLM, Gemini]
+    G -->|no gaps or max retries| H[Reviewer Agent — LLM]
     H --> I{Approved?}
     I -->|Yes| J[Export: Gherkin + CSV]
     I -->|No| K[pending_human_review.json]
