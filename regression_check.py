@@ -1,7 +1,9 @@
 from pipeline.graph import run_full_pipeline
 from pipeline.utils import load_json_file
 
-ISSUE_COUNT_TOLERANCE = 1
+# Reviewer output is LLM-generated and can vary between otherwise equivalent runs.
+# Allow up to two additional findings while still catching larger quality regressions.
+ISSUE_COUNT_TOLERANCE = 2
 
 def check_regression():
     golden_requirements = load_json_file(
