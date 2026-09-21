@@ -24,11 +24,29 @@ class RequirementState(TypedDict):
 
 def generate_node(state):
     existing_titles = [tc["title"] for tc in state["test_cases"]]
-    new_cases = generate_test_cases(state["structured_requirement"],
-                                     gap_context=state.get("gap_context"),
-                                     existing_titles=existing_titles)
-    for i, tc in enumerate(new_cases, start=len(state["test_cases"]) + 1):
-        tc["test_id"] = f"{state['id']}-TC-{i}"
+
+    new_cases = generate_test_cases(
+        state["structured_requirement"],
+        gap_context=state.get("gap_context"),
+        existing_titles=existing_titles
+    )
+
+    prefix = f"{state['id']}-TC-"
+
+    existing_numbers = []
+    for tc in state["test_cases"]:
+        test_id = tc.get("test_id", "")
+        if test_id.startswith(prefix):
+            try:
+                existing_numbers.append(int(test_id[len(prefix):]))
+            except ValueError:
+                pass
+
+    next_id = max(existing_numbers, default=0) + 1
+
+    for offset, tc in enumerate(new_cases):
+        tc["test_id"] = f"{prefix}{next_id + offset}"
+
     return {"test_cases": state["test_cases"] + new_cases}
 
 
