@@ -28,20 +28,8 @@ def check_regression():
                     problems.append(f"{req_id}/{tc.get('test_id')}: missing '{field}'")
 
         ids = [tc["test_id"] for tc in state["test_cases"]]
-        duplicate_ids = sorted({x for x in ids if ids.count(x) > 1})
-        
-        if duplicate_ids:
-            problems.append(
-                f"{req_id}: duplicate test_id values found: {duplicate_ids}"
-            )
-            print(f"\nDEBUG {req_id} duplicate IDs: {duplicate_ids}")
-            for tc in state["test_cases"]:
-                if tc["test_id"] in duplicate_ids:
-                    print(
-                        f"  {tc['test_id']} | "
-                        f"{tc['category']} | "
-                        f"{tc['title']}"
-                    )
+        if len(ids) != len(set(ids)):
+            problems.append(f"{req_id}: duplicate test_id values found")
 
         valid_rule_ids = set(br["rule_id"] for br in state["structured_requirement"].get("business_rules", []))
         for tc in state["test_cases"]:
